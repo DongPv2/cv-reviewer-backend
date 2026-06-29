@@ -4,6 +4,7 @@ Dùng Arial Unicode để hỗ trợ tiếng Việt.
 """
 
 import io
+from pathlib import Path
 from typing import Optional
 
 from reportlab.lib import colors
