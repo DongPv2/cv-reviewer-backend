@@ -238,12 +238,19 @@ async def export_session(
     except ExportError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
-    # Tên file cố định theo spec
+    # Tên file: overview-<tên CV gốc bỏ extension>.pdf
+    import os as _os
+    stem = _os.path.splitext(session.file_name)[0]
+    download_name = f"overview-{stem}.pdf"
+    # Encode để an toàn với ký tự đặc biệt
+    from urllib.parse import quote
+    encoded_name = quote(download_name)
+
     return FastAPIResponse(
         content=pdf_bytes,
         media_type="application/pdf",
         headers={
-            "Content-Disposition": 'attachment; filename="cv_review.pdf"',
+            "Content-Disposition": f"attachment; filename=\"{download_name}\"; filename*=UTF-8''{encoded_name}",
         },
     )
 
