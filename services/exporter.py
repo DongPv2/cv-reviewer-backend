@@ -26,15 +26,38 @@ from models.schemas import AnalysisReport
 
 # ---------------------------------------------------------------------------
 # Đăng ký font Unicode hỗ trợ tiếng Việt
+# Ưu tiên font nhúng trong project, fallback sang font hệ thống
 # ---------------------------------------------------------------------------
-_FONT_REGULAR = "ArialUnicode"
-_FONT_BOLD = "ArialUnicode"  # fallback — Arial Unicode không có bold riêng
+_FONTS_DIR = Path(__file__).parent.parent / "fonts"
+_FONT_REGULAR = "NotoSans"
+_FONT_BOLD = "NotoSans-Bold"
 
-try:
-    pdfmetrics.registerFont(TTFont("ArialUnicode", "/Library/Fonts/Arial Unicode.ttf"))
-    _FONT_REGISTERED = True
-except Exception:
-    _FONT_REGISTERED = False
+def _register_fonts() -> bool:
+    """Đăng ký Noto Sans từ thư mục fonts/ trong project."""
+    regular = _FONTS_DIR / "NotoSans-Regular.ttf"
+    bold = _FONTS_DIR / "NotoSans-Bold.ttf"
+    if regular.is_file() and bold.is_file():
+        try:
+            pdfmetrics.registerFont(TTFont("NotoSans", str(regular)))
+            pdfmetrics.registerFont(TTFont("NotoSans-Bold", str(bold)))
+            return True
+        except Exception:
+            pass
+
+    # Fallback: thử Arial Unicode trên macOS
+    arial = Path("/Library/Fonts/Arial Unicode.ttf")
+    if arial.is_file():
+        try:
+            pdfmetrics.registerFont(TTFont("NotoSans", str(arial)))
+            pdfmetrics.registerFont(TTFont("NotoSans-Bold", str(arial)))
+            return True
+        except Exception:
+            pass
+
+    return False
+
+_FONT_REGISTERED = _register_fonts()
+if not _FONT_REGISTERED:
     _FONT_REGULAR = "Helvetica"
     _FONT_BOLD = "Helvetica-Bold"
 
